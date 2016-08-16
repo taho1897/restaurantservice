@@ -8,12 +8,21 @@ router.get('/', function(req, res, next) {
   var message = '';
   var results = [];
 
-  if (req.url === '/') { // 주문 목록 조회
+  if (req.url.match(/\/\?pageNo=\d+&rowCount=\d+/i)) { // 주문 목록 조회 req.url: /?pageNo=1&rowCount=10
     message = 'list orders';
-    results.push({
+    var pageNo = parseInt(req.query.pageNo, 10);
+    var rowCount = parseInt(req.query.rowCount, 10);
 
+    Order.listOrders(pageNo, rowCount, function(err, orders) {
+      if (err) {
+        return next(err);
+      }
+      data.results = orders;
+      res.send({
+        message: message,
+        data: data
+      });
     });
-    data.results = results;
   } else {
     var startdate = req.query.startdate;
     var enddate = req.query.enddate;
@@ -46,11 +55,6 @@ router.get('/', function(req, res, next) {
       data.results = results;
     }
   }
-
-  res.send({
-    message: message,
-    data: data
-  });
 });
 
 // 주문 생성, POST /orders
@@ -87,7 +91,18 @@ router.post('/', function(req, res, next) {
 
 // 주문 조회, GET /orders/:oid
 router.get('/:oid', function(req, res, next) {
-  res.send({ message: req.params.oid + ', read order' });
+  var oid = req.params.oid;
+
+  Order.showOrderDetails(oid, function(err, results) {
+    if (err) {
+      return next(err);
+    }
+    res.send({
+      message: req.params.oid + ', read order',
+      result: {
+        details: results
+      }});
+  });
 });
 
 // 주문 변경, PUT /orders/:oid

@@ -103,5 +103,51 @@ function placeOrder(orderObj, callback) {
 
 }
 
+function listOrders(pageNo, rowCount, callback) {
+  var sql = 'SELECT mo.id moid, ' +
+                   'date_format(convert_tz(mo.order_dtime, ?, ?), \'%Y-%m-%d %H:%i:%s\') motime, ' +
+                   'b.name bname, ' +
+                   'c.name cname, ' +
+                   'sum(md.menu_price * md.quantity) total_price ' +
+            'FROM menu_order_details md JOIN menu_order mo ON (md.menu_order_id = mo.id) ' +
+                                       'JOIN branch b ON (mo.branch_id = b.id) ' +
+                                       'JOIN customer c ON (mo.customer_id = c.id) ' +
+            'GROUP BY mo.id ' +
+            'ORDER BY mo.id DESC ' +
+            'LIMIT ?, ?';
+
+  var dbConn = mysql.createConnection(dbConfig);
+  dbConn.query(sql, ["+00:00", "+09:00", rowCount * (pageNo - 1), rowCount], function(err, results) {
+    if (err) {
+      dbConn.end();
+      return callback(err);
+    }
+    callback(null, results);
+    dbConn.end();
+  });
+}
+
+function showOrderDetails(orderId, callback) {
+  var sql_select_menu_order_details = 'SELECT m.name, m.price, md.quantity, m.price * md.quantity total_price ' +
+    'FROM menu_order_details md JOIN branch_menu bm ON (md.branch_menu_id = bm.id) ' +
+    'JOIN menu m ON (bm.menu_id = m.id) ' +
+    'WHERE menu_order_id = ?';
+
+  var dbConn = mysql.createConnection(dbConfig);
+  dbConn.query(sql_select_menu_order_details, [orderId], function(err, results) {
+    if (err) {
+      dbConn.end();
+      return callback(err);
+    }
+    callback(null, results);
+    dbConn.end();
+  });
+}
+
+function updateOrderDetails(orderId, details, callback) {
+
+}
 
 module.exports.placeOrder = placeOrder;
+module.exports.listOrders = listOrders;
+module.exports.showOrderDetails = showOrderDetails;
