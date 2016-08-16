@@ -107,6 +107,7 @@ router.get('/:oid', function(req, res, next) {
 
 // 주문 변경, PUT /orders/:oid
 router.put('/:oid', function(req, res, next) {
+  var oid = req.params.oid;
   var details = [];
   for (var i = 0; i < req.body.branch_menu_ids.length; i++) {
     details.push({
@@ -114,13 +115,20 @@ router.put('/:oid', function(req, res, next) {
       quantity: req.body.quantities[i]
     });
   }
-  res.send({
-    message: req.params.oid + ', update order',
-    result: {
-      order_id: req.params.oid,
-      details: details
+  Order.updateOrderDetails(oid, details, function(err, result) {
+    if (err) {
+      return next(err);
     }
+
+    res.send({
+      message: req.params.oid + ', update order',
+      result: {
+        order_id: req.params.oid,
+        changedRows: result
+      }
+    });
   });
+
 });
 
 module.exports = router;
