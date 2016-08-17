@@ -1,3 +1,12 @@
-/**
- * Created by T on 2016-08-17.
- */
+
+
+function isAuthenticated(req, res, next) {
+    if (!req.user) {
+        return res.status(401).send({
+            message: 'Login Required'
+        });
+    }
+    next();
+}
+
+module.exports.isAuthenticated = isAuthenticated;

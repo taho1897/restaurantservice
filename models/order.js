@@ -1,17 +1,11 @@
 var mysql = require('mysql');
 var async = require('async');
-
-var dbConfig = {
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME
-};
+var dbConfig = require('../config/dbConfig');
 
 function placeOrder(orderObj, callback) {
   var sql_insert_menu_order = 'INSERT INTO menu_order(branch_id, customer_id) ' +
     'VALUES(?, ?)';
-  var sql_insert_menu_order_details = 'INSERT INTO menu_order_details(menu_order_id, branch_menu_id, quantity, menu_price) ' +
+  var sql_insert_menu_order_details = 'INSERT INTO menu_order_details(menu_order_id, branch_menu_id, quantity, price) ' +
     'VALUES(?, ?, ?, ?)';
   var sql_select_menu_price = 'SELECT m.price ' +
     'FROM branch_menu bm JOIN menu m ON(bm.menu_id = m.id) ' +
@@ -72,9 +66,9 @@ function placeOrder(orderObj, callback) {
       if (err) {
         return callback(err);
       }
-      item.menu_price = price;
+      item.price = price;
       dbConn.query(sql_insert_menu_order_details,
-        [id, item.branch_menu_id, item.quantity, item.menu_price], function (err, result) {
+        [id, item.branch_menu_id, item.quantity, item.price], function (err, result) {
           if (err) {
             return callback(err);
           }
@@ -108,7 +102,7 @@ function listOrders(pageNo, rowCount, callback) {
     'date_format(convert_tz(mo.order_dtime, ?, ?), \'%Y-%m-%d %H:%i:%s\') motime, ' +
     'b.name bname, ' +
     'c.name cname, ' +
-    'sum(md.menu_price * md.quantity) total_price ' +
+    'sum(md.price * md.quantity) total_price ' +
     'FROM menu_order_details md JOIN menu_order mo ON (md.menu_order_id = mo.id) ' +
     'JOIN branch b ON (mo.branch_id = b.id) ' +
     'JOIN customer c ON (mo.customer_id = c.id) ' +
@@ -147,7 +141,7 @@ function showOrderDetails(orderId, callback) {
 function updateOrderDetails(orderId, details, callback) {
   // quantity, menu_order_id, branch_menu_id
   var sql_update_menu_order_details = "update menu_order_details " +
-                                      "set  quantity = ? " +
+                                      "set quantity = ? " +
                                       "where menu_order_id = ? and branch_menu_id = ?";
   var dbConn = mysql.createConnection(dbConfig);
   var changedRows = 0;
