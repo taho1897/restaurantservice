@@ -57,7 +57,7 @@ function createMenu(menu, callback) {
             }
             callback(null);
         });
-        /* if (menu.files.length > 1) {
+        /*if (menu.files.length > 1) {
             async.each(menu.files, function (item, done) {
                 dbConn.query(sql_insert_file, [menu_id, item.name, item.path], function (err, result) {
                     if (err) {
@@ -116,9 +116,18 @@ function findMenu(menuId, callback) {
             menu.id = results[0][0].id;
             menu.name =results[0][0].name;
             menu.price = results[0][0].price;
-            menu.originalFilename = results[1][0].filename;
-            var filename = path.basename(results[1][1].filepath);
-            menu.fileUrl = url.resolve('http://localhost:3000', '/images/' + filename);
+            menu.photodata = [];
+            async.each(results[1], function (item, done) {
+                var filename = path.basename(item.filepath);
+                menu.photodata.push({
+                    originalFilename: item.filename,
+                    fileUrl: url.resolve('http://localhost:3000', '/images/' + filename)
+                });
+                done();
+            });
+
+            // console.log(results[1]);
+            // console.log(results[1][0]);
             conn.release();
             callback(null, menu);
         });
