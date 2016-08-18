@@ -125,9 +125,6 @@ function findMenu(menuId, callback) {
                 });
                 done();
             });
-
-            // console.log(results[1]);
-            // console.log(results[1][0]);
             conn.release();
             callback(null, menu);
         });
@@ -152,6 +149,16 @@ function findMenu(menuId, callback) {
     });
 }
 
+function deleteMenu() {
+
+}
+
+function updateMenuPhoto() {
+
+}
+
 module.exports.createMenu = createMenu;
 module.exports.listMenus = listMenus;
 module.exports.findMenu = findMenu;
+module.exports.deleteMenu = deleteMenu;
+module.exports.updateMenuPhoto = updateMenuPhoto;

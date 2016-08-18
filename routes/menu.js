@@ -79,10 +79,12 @@ router.post('/', function(req, res, next) {
 });
 
 router.put('/:id', function(req, res, next) {
+    Menu.updateMenuPhoto();
     res.send({ message: 'update menu(' + req.params.id + ')'});
 });
 
 router.delete('/:id', function(req, res, next) {
+    Menu.deleteMenu();
     res.send({ message: 'delete menu(' + req.params.id + ')'});
 });
 
