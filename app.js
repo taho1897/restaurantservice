@@ -35,12 +35,13 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/images', express.static(path.join(__dirname, 'uploads/images/menus')));
 
 app.use('/auth', auth);// 로그인 인증 추가 부분
 app.use('/orders', order);
 app.use('/customers', customer);
-/*app.use('/menus', menu);
-app.use('/branches', branch);*/
+app.use('/menus', menu);
+// app.use('/branches', branch);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
