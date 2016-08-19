@@ -79,13 +79,44 @@ router.post('/', function(req, res, next) {
 });
 
 router.put('/:id', function(req, res, next) {
-    Menu.updateMenuPhoto();
-    res.send({ message: 'update menu(' + req.params.id + ')'});
+    var form = new formidable.IncomingForm();
+    form.uploadDir = path.join(__dirname, '../uploads/images/menus');
+    form.keepExtensions = true;
+    form.multiples = true;
+    form.parse(req, function(err, fields, files) {
+        if (err) {return next(err);}
+        var menu = {};
+        menu.files = [];
+        if (files.photos instanceof Array) {
+            menu.files = files.photos;
+        } else if (files.photos instanceof Object) {
+            menu.files.push(files.photos);
+        }
+        var menuId = req.params.id;
+        Menu.updateMenuPhoto(menuId, menu, function(err, result) {
+            if (err) {
+                return next(err);
+            }
+            res.send({
+                message: 'update menu(' + menuId + ')',
+                changedRow : result
+            });
+        });
+    });
 });
 
 router.delete('/:id', function(req, res, next) {
-    Menu.deleteMenu();
-    res.send({ message: 'delete menu(' + req.params.id + ')'});
+    var menuId = req.params.id;
+    Menu.deleteMenu(menuId, function(err, result) {
+        if (err) {
+            return next(err);
+        }
+        res.send({
+            message: 'delete menu(' + menuId + ')',
+            deletedRow : result
+        });
+    });
+
 });
 
 module.exports = router;

@@ -1,6 +1,7 @@
 var mysql = require('mysql');
 var async = require('async');
 var dbConfig = require('../config/dbConfig');
+var dbPool = require('./common').dbPool;
 
 function placeOrder(orderObj, callback) {
   var sql_insert_menu_order = 'INSERT INTO menu_order(branch_id, customer_id) ' +
@@ -13,42 +14,50 @@ function placeOrder(orderObj, callback) {
   var sql_select_menu_order_dtime = 'SELECT date_format(convert_tz(mo.order_dtime, \'+00:00\', \'+09:00\'), \'%Y-%m-%d %H:%i:%s\') odtime ' +
     'FROM menu_order mo ' +
     'WHERE mo.id = ? ';
-
-  var dbConn = mysql.createConnection(dbConfig);
-  dbConn.beginTransaction(function (err) {
-    if (err) {
-      return callback(err);
-    }
-    async.series([insertMenuOrder, insertMenuOrderDetailsEach], function (err) {
+  dbPool.getConnection(function (err, dbConn) {
       if (err) {
-        return dbConn.rollback(function () {
-          callback(err);
-          dbConn.end();
-        });
+          return callback(err);
       }
-      dbConn.commit(function () {
-        callback(null, orderObj);
-        dbConn.end();
-      })
-    });
+      dbConn.beginTransaction(function (err) {
+          if (err) {
+              return callback(err);
+          }
+          async.series([insertMenuOrder, insertMenuOrderDetailsEach], function (err) {
+              if (err) {
+                  return dbConn.rollback(function () {
+                      dbConn.release();
+                      callback(err);
+                  });
+              }
+              dbConn.commit(function () {
+                  dbConn.release();
+                  callback(null, orderObj);
+              });
+          });
+
+          function insertMenuOrder(callback) {
+              dbConn.query(sql_insert_menu_order, [orderObj.branch_id, orderObj.customer_id], function (err, result) {
+                  if (err) {
+                      return callback(err);
+                  }
+                  console.log('result.insertId: ' + result.insertId);
+                  orderObj.id = result.insertId;
+                  selectMenuOrderDtime(orderObj.id, function (err, result) {
+                      if (err) {
+                          return callback(err);
+                      }
+                      orderObj.order_dtime = result;
+                      callback(null);
+                  });
+              });
+          }
+
+      });
   });
 
-  function insertMenuOrder(callback) {
-    dbConn.query(sql_insert_menu_order, [orderObj.branch_id, orderObj.customer_id], function (err, result) {
-      if (err) {
-        return callback(err);
-      }
-      console.log('result.insertId: ' + result.insertId);
-      orderObj.id = result.insertId;
-      selectMenuOrderDtime(orderObj.id, function (err, result) {
-        if (err) {
-          return callback(err);
-        }
-        orderObj.order_dtime = result;
-        callback(null);
-      });
-    });
-  }
+
+
+
 
   function insertMenuOrderDetailsEach(callback) {
     async.each(orderObj.details, function (item, done) {
