@@ -98,24 +98,24 @@ router.post('/local/login', function (req, res, next) {
     user.name = req.user.name;
     user.email = req.user.email;
     res.send({
-        message: 'local login',
-        user: user
+        message : 'local login',
+        user : user
     });
 });
 
 router.get('/local/logout', function(req, res, next) {
     req.logout();
-    res.send({ message: 'local logout' });
+    res.send({ message : 'local logout' });
 });
 
-router.get('/facebook', passport.authenticate('facebook', {scope: ['email']}));
+router.get('/facebook', passport.authenticate('facebook', {scope : ['email']}));
 
 router.get('/facebook/callback', passport.authenticate('facebook'), function(req, res, next) {
-    res.send({ message: 'facebook callback' });
+    res.send({ message : 'facebook callback' });
 });
 
-router.post('/facebook/token', passport.authenticate('facebook-token', {scope: ['email']}), function(req, res, next) {
-    res.send(req.user? 200 : 401);
+router.post('/facebook/token', passport.authenticate('facebook-token', {scope : ['email']}), function(req, res, next) {
+    res.send(req.user ? 200 : 401);
 });
 
 
