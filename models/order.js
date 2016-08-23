@@ -52,58 +52,52 @@ function placeOrder(orderObj, callback) {
               });
           }
 
+          function insertMenuOrderDetailsEach(callback) {
+              async.each(orderObj.details, function (item, done) {
+                  insertMenuOrderDetails(orderObj.id, item, done);
+              }, function (err) {
+                  if (err) {
+                      return callback(err);
+                  }
+                  callback(null);
+              });
+          }
+
+          function insertMenuOrderDetails(id, item, callback) {
+              selectMenuPrice(item.branch_menu_id, function (err, price) {
+                  if (err) {
+                      return callback(err);
+                  }
+                  item.price = price;
+                  dbConn.query(sql_insert_menu_order_details,
+                      [id, item.branch_menu_id, item.quantity, item.price], function (err, result) {
+                          if (err) {
+                              return callback(err);
+                          }
+                          callback(null);
+                      });
+              });
+          }
+
+          function selectMenuPrice(branch_menu_id, callback) {
+              dbConn.query(sql_select_menu_price, [branch_menu_id], function (err, results) {
+                  if (err) {
+                      return callback(err);
+                  }
+                  callback(null, results[0].price);
+              });
+          }
+
+          function selectMenuOrderDtime(menu_order_id, callback) {
+              dbConn.query(sql_select_menu_order_dtime, [menu_order_id], function (err, results) {
+                  if (err) {
+                      return callback(err);
+                  }
+                  callback(null, results[0].odtime);
+              });
+          }
       });
   });
-
-
-
-
-
-  function insertMenuOrderDetailsEach(callback) {
-    async.each(orderObj.details, function (item, done) {
-      insertMenuOrderDetails(orderObj.id, item, done);
-    }, function (err) {
-      if (err) {
-        return callback(err);
-      }
-      callback(null);
-    });
-  }
-
-  function insertMenuOrderDetails(id, item, callback) {
-    selectMenuPrice(item.branch_menu_id, function (err, price) {
-      if (err) {
-        return callback(err);
-      }
-      item.price = price;
-      dbConn.query(sql_insert_menu_order_details,
-        [id, item.branch_menu_id, item.quantity, item.price], function (err, result) {
-          if (err) {
-            return callback(err);
-          }
-          callback(null);
-        });
-    });
-  }
-
-  function selectMenuPrice(branch_menu_id, callback) {
-    dbConn.query(sql_select_menu_price, [branch_menu_id], function (err, results) {
-      if (err) {
-        return callback(err);
-      }
-      callback(null, results[0].price);
-    });
-  }
-
-  function selectMenuOrderDtime(menu_order_id, callback) {
-    dbConn.query(sql_select_menu_order_dtime, [menu_order_id], function (err, results) {
-      if (err) {
-        return callback(err);
-      }
-      callback(null, results[0].odtime);
-    });
-  }
-
 }
 
 function listOrders(pageNo, rowCount, callback) {

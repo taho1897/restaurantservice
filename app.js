@@ -6,6 +6,9 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var session = require('express-session');// express-session 추가
 var passport = require('passport');// passport framework 로딩
+var redis = require('redis');// Redis 서버에 session 구현 위해 추가
+var redisClient = redis.createClient();// Redis 서버에 session 구현 위해 추가
+var redisStore = require('connect-redis')(session);// Redis 서버에 session 구현 위해 추가
 
 var auth = require('./routes/auth');
 var customer = require('./routes/customer');
@@ -27,11 +30,23 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));// 서비스 시 qs를 사용하기에 extended를 true로 변경
 app.use(cookieParser());
+/*Redis 사용 전 사용 하던 Session
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: true,
     saveUninitialized: true
+}));*/
+app.use(session({// Redis 서버에 session 구현 위해 추가
+    secret: process.env.SESSION_SECRET,
+    store: new redisStore({
+        host: "127.0.0.1",
+        port: 6379,
+        client: redisClient
+    }),
+    resave: true,// 변경이 없으면 저장하지 말라는 옵션
+    saveUninitialized: false// 저장된것이 없으면 저장하지 말라는 옵션
 }));
+
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'public')));
