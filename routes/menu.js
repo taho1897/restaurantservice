@@ -5,8 +5,9 @@ var util = require('util');
 var path = require('path');
 var Menu = require('../models/menu');
 var async = require('async');
+var isSecure = require('./common').isSecure;// HTTPS 사용 위해 추가
 
-router.get('/', function(req, res, next) {
+router.get('/', isSecure, function(req, res, next) {// HTTPS 사용 위해 추가
     var message = '';
     var data = {};
 

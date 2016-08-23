@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var Customer = require('../models/customer')
-
+var isSecure = require('./common').isSecure;
 
 // register customer
 router.post('/', function(req, res, next) {
@@ -25,7 +25,7 @@ router.post('/', function(req, res, next) {
     });
 });
 // customer list
-router.get('/', function(req, res, next) {
+router.get('/', isSecure, function(req, res, next) {// HTTPS 사용 위해 추가
     var message = '';
     var data = {};
 
