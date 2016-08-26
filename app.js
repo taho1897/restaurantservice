@@ -15,6 +15,7 @@ var customer = require('./routes/customer');
 var branch = require('./routes/branch');
 var menu = require('./routes/menu');
 var order = require('./routes/order');
+var notification = require('./routes/notification');// FCM 사용 추가 코드
 
 var app = express();
 
@@ -57,6 +58,7 @@ app.use('/orders', order);
 app.use('/customers', customer);
 app.use('/menus', menu);
 // app.use('/branches', branch);
+app.use('/notifications', notification);// FCM 사용 추가 코드
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

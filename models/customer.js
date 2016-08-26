@@ -9,7 +9,9 @@ var dbPool = require('./common').dbPool;
 };*/
 
 function findOrCreate(profile, callback) {
-    var sql_find_facebook_id = 'SELECT id, name, email, facebookid ' +
+
+
+    /*var sql_find_facebook_id = 'SELECT id, name, email, facebookid ' +
                                'FROM customer ' +
                                'WHERE facebookid = ?';
     var sql_create_facebook_id = 'INSERT INTO customer(name, email, facebookid) ' +
@@ -65,7 +67,7 @@ function findByEmail(email, callback) {
             }
             callback(null, result[0]);
         });
-    });
+    });*/
 
 }
 
@@ -121,6 +123,7 @@ function registerCustomer(customerObj, callback) {
         });
     });
 }
+
 function findCustomer(customerId, callback) {
     var sql_select_customer = 'SELECT id, name, email, facebookid FROM customer WHERE id = ?';
 
